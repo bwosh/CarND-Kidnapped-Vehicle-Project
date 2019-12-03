@@ -5,12 +5,13 @@
  * Created on: Dec 12, 2016
  * Author: Tiffany Huang
  */
-
+ 
 #ifndef PARTICLE_FILTER_H_
 #define PARTICLE_FILTER_H_
 
 #include <string>
 #include <vector>
+#include <random>
 #include "helper_functions.h"
 
 struct Particle {
@@ -120,6 +121,9 @@ class ParticleFilter {
   
   // Vector of weights of all particles
   std::vector<double> weights; 
+
+  // Random engine
+  std::default_random_engine gen;
 };
 
 #endif  // PARTICLE_FILTER_H_
