@@ -14,8 +14,7 @@ Approach using partice filter is implemented.
 
 
 ## Running the Code
-This project involves the Term 2 Simulator which can be downloaded [here](https://github.com/udacity/self-driving-car-sim/releases)
-
+This project involves the Term 2 Simulator which can be downloaded [here](https://github.com/udacity/self-driving-car-sim/releases). The C++ application uses web sockets to communicate with the simulator.
 
 The project contains scripts for running all necessary commands:
 
