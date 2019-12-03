@@ -128,38 +128,40 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
   double std_range = std_landmark[0];
   double std_bearing = std_landmark[1];
 
-  for (int i = 0; i < num_particles; ++i) 
+  for (int i = 0; i < num_particles; ++i)
   {
     Particle *p = &(particles[i]);
 
     // Filter landmarks to range of sensor
     double sensor_range_squared = sensor_range * sensor_range;
     vector<LandmarkObs> inrange_landmarks;
-    for(int l = 0; l < map_landmarks.landmark_list.size(); ++l) 
+    for (int l = 0; l < map_landmarks.landmark_list.size(); ++l)
     {
       Map::single_landmark_s landmark = map_landmarks.landmark_list[l];
       float l_x = landmark.x_f;
       float l_y = landmark.y_f;
 
-      double dX = p->x - l_x;
-      double dY = p->y - l_y;
-      if ( dX*dX + dY*dY <= sensor_range_squared ) 
+      double d_x = p->x - l_x;
+      double d_y = p->y - l_y;
+      if (d_x * d_x + d_y * d_y <= sensor_range_squared)
       {
-        inrange_landmarks.push_back(LandmarkObs{ landmark.id_i, l_x, l_y });
+        inrange_landmarks.push_back(LandmarkObs{landmark.id_i, l_x, l_y});
       }
     }
 
     // Change coordinates to transformed
     vector<LandmarkObs> mapped_observations;
-    for(unsigned int j = 0; j < observations.size(); j++) 
+    for (unsigned int j = 0; j < observations.size(); j++)
     {
-      double mapped_x = cos(p->theta)*observations[j].x - sin(p->theta)*observations[j].y + p->x;
-      double mapped_y = sin(p->theta)*observations[j].x + cos(p->theta)*observations[j].y + p->y;
-      mapped_observations.push_back(LandmarkObs{ observations[j].id, mapped_x, mapped_y });
+      double mapped_x = cos(p->theta) * observations[j].x - sin(p->theta) * observations[j].y + p->x;
+      double mapped_y = sin(p->theta) * observations[j].x + cos(p->theta) * observations[j].y + p->y;
+      mapped_observations.push_back(LandmarkObs{observations[j].id, mapped_x, mapped_y});
     }
+
+    dataAssociation(inrange_landmarks, mapped_observations);
+
+    // TODO multivariate gaussian probability density weight update
   }
-
-
 }
 
 void ParticleFilter::resample()
@@ -168,14 +170,14 @@ void ParticleFilter::resample()
   vector<double> weights;
   double max_weight = numeric_limits<double>::min();
 
-  for(int i = 0; i < num_particles; ++i) 
+  for (int i = 0; i < num_particles; ++i)
   {
     Particle *particle = &(particles[i]);
     // save weight
     weights.push_back(particle->weight);
 
     // save maximum weight
-    if ( particle->weight > max_weight ) 
+    if (particle->weight > max_weight)
     {
       max_weight = particle->weight;
     }
@@ -187,10 +189,11 @@ void ParticleFilter::resample()
   double beta = 0.0;
   uniform_real_distribution<double> distDouble(0.0, max_weight);
 
-  for(int i = 0; i < num_particles; ++i) 
+  for (int i = 0; i < num_particles; ++i)
   {
     beta += distDouble(gen) * 2.0;
-    while( beta > weights[index]) {
+    while (beta > weights[index])
+    {
       beta -= weights[index];
       index = (index + 1) % num_particles;
     }
