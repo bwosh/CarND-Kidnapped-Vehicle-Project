@@ -22,8 +22,8 @@ using std::string;
 using std::vector;
 using namespace std;
 
-#define PARTICLES_NUMBER 100
-#define THETA_EPS 0.00001
+#define PARTICLES_NUMBER 30
+#define EPS 0.00001
 
 void ParticleFilter::init(double x, double y, double theta, double std[])
 {
@@ -65,7 +65,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
 
     double theta = p->theta;
 
-    if (fabs(yaw_rate) < THETA_EPS)
+    if (fabs(yaw_rate) < EPS)
     {
       p->x += velocity * delta_t * cos(theta);
       p->y += velocity * delta_t * sin(theta);
@@ -160,7 +160,49 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
     dataAssociation(inrange_landmarks, mapped_observations);
 
-    // TODO multivariate gaussian probability density weight update
+    // Calculate weights
+    p->weight = 1.0;
+    for (unsigned int j = 0; j < mapped_observations.size(); ++j)
+    {
+      double observation_x = mapped_observations[j].x;
+      double observation_y = mapped_observations[j].y;
+
+      int landmark_id = mapped_observations[j].id;
+
+      double l_x, l_y;
+      int k = 0;
+      int landmarks_count = inrange_landmarks.size();
+      bool found = false;
+
+      // Finding landmarks position
+      while (!found && k < landmarks_count)
+      {
+        if (inrange_landmarks[k].id == landmark_id)
+        {
+          found = true;
+          l_x = inrange_landmarks[k].x;
+          l_y = inrange_landmarks[k].y;
+        }
+        k++;
+      }
+
+      // Calculating weight
+      double dX = observation_x - l_x;
+      double dY = observation_y - l_y;
+
+      // Calculate multivariate gaussian probability density
+      double weight = (1 / (2 * M_PI * std_range * std_bearing)) * exp(-(dX * dX / (2 * std_range * std_bearing) + (dY * dY / (2 * std_bearing * std_bearing))));
+      
+      // Aggregating product of weights above in particle weight
+      if (weight == 0)
+      {
+        p->weight *= EPS;
+      }
+      else
+      {
+        p->weight *= weight;
+      }
+    }
   }
 }
 
