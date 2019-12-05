@@ -23,4 +23,10 @@ The project contains scripts for running all necessary commands:
 3. ./run.sh
 
 ## The results
-( TODO )
+With usage of 30 particles, the code scored in simulator:
+* x-error:  .128
+* y-error: .121
+* yaw: .004
+* system time: 78.74 sec
+
+![screenshot](./images/success.png)
